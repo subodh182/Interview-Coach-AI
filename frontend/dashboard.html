@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InterviewAI – Dashboard</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dark-mode">
+  <div class="noise-overlay"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">⬡</span>
+      <span>Interview<span class="accent">AI</span></span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="nav-item active">
+        <span class="nav-icon">📊</span>
+        <span>Dashboard</span>
+      </a>
+      <a href="setup.html" class="nav-item">
+        <span class="nav-icon">🎯</span>
+        <span>Start Interview</span>
+      </a>
+      <a href="history.html" class="nav-item">
+        <span class="nav-icon">📋</span>
+        <span>History</span>
+      </a>
+      <a href="leaderboard.html" class="nav-item">
+        <span class="nav-icon">🏆</span>
+        <span>Leaderboard</span>
+      </a>
+      <a href="profile.html" class="nav-item">
+        <span class="nav-icon">👤</span>
+        <span>Profile</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="theme-toggle sidebar-theme" id="sidebarThemeToggle">
+        <span class="theme-icon">☽</span>
+        <span>Toggle Theme</span>
+      </button>
+      <button class="logout-btn" id="logoutBtn">
+        <span>🚪</span>
+        <span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Sidebar Overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Main Layout -->
+  <div class="main-layout">
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger-sidebar" id="sidebarToggle">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="topbar-greeting">
+          <span id="greetingText">Good morning</span>,
+          <span id="userName" class="accent">Loading...</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="theme-toggle" id="topThemeToggle">
+          <span class="theme-icon">☽</span>
+        </button>
+        <a href="setup.html" class="btn-primary">
+          <span>+</span> New Interview
+        </a>
+        <div class="user-avatar" id="userAvatar">U</div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-card-icon blue">🎤</div>
+          <div class="stat-card-info">
+            <span class="stat-card-num" id="totalInterviews">0</span>
+            <span class="stat-card-label">Total Interviews</span>
+          </div>
+          <div class="stat-card-trend up" id="interviewTrend">+0%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon green">⭐</div>
+          <div class="stat-card-info">
+            <span class="stat-card-num" id="avgScore">0%</span>
+            <span class="stat-card-label">Avg Score</span>
+          </div>
+          <div class="stat-card-trend up" id="scoreTrend">+0%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon purple">🔥</div>
+          <div class="stat-card-info">
+            <span class="stat-card-num" id="streakDays">0</span>
+            <span class="stat-card-label">Day Streak</span>
+          </div>
+          <div class="stat-card-trend neutral" id="streakLabel">Keep it up!</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon yellow">🏅</div>
+          <div class="stat-card-info">
+            <span class="stat-card-num" id="rankNum">#--</span>
+            <span class="stat-card-label">Your Rank</span>
+          </div>
+          <div class="stat-card-trend neutral">Leaderboard</div>
+        </div>
+      </div>
+
+      <!-- Grid Row 1 -->
+      <div class="dashboard-grid">
+
+        <!-- Performance Chart -->
+        <div class="dash-card wide">
+          <div class="dash-card-header">
+            <h3>Performance Over Time</h3>
+            <div class="chart-filters">
+              <button class="cf-btn active" data-range="week">Week</button>
+              <button class="cf-btn" data-range="month">Month</button>
+              <button class="cf-btn" data-range="all">All</button>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="performanceChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Skills Radar -->
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <h3>Skills Analysis</h3>
+          </div>
+          <div class="chart-wrap radar-wrap">
+            <canvas id="skillsChart"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Grid Row 2 -->
+      <div class="dashboard-grid">
+
+        <!-- Strength / Weakness -->
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <h3>Strengths & Weaknesses</h3>
+          </div>
+          <div class="sw-list" id="swList">
+            <div class="sw-item strength">
+              <span class="sw-icon">💪</span>
+              <div>
+                <span class="sw-name">Loading...</span>
+                <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+              </div>
+              <span class="sw-score">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Start -->
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <h3>Quick Start</h3>
+          </div>
+          <div class="quick-starts">
+            <a href="setup.html?role=frontend&level=medium" class="qs-item">
+              <span class="qs-icon">🌐</span>
+              <div class="qs-info">
+                <span class="qs-role">Frontend Developer</span>
+                <span class="qs-meta">Medium · 10 Questions</span>
+              </div>
+              <span class="qs-arrow">→</span>
+            </a>
+            <a href="setup.html?role=backend&level=medium" class="qs-item">
+              <span class="qs-icon">⚙️</span>
+              <div class="qs-info">
+                <span class="qs-role">Backend Developer</span>
+                <span class="qs-meta">Medium · 10 Questions</span>
+              </div>
+              <span class="qs-arrow">→</span>
+            </a>
+            <a href="setup.html?role=hr&level=easy" class="qs-item">
+              <span class="qs-icon">💼</span>
+              <div class="qs-info">
+                <span class="qs-role">HR Interview</span>
+                <span class="qs-meta">Easy · 8 Questions</span>
+              </div>
+              <span class="qs-arrow">→</span>
+            </a>
+            <a href="setup.html?role=java&level=hard" class="qs-item">
+              <span class="qs-icon">☕</span>
+              <div class="qs-info">
+                <span class="qs-role">Java Developer</span>
+                <span class="qs-meta">Hard · 12 Questions</span>
+              </div>
+              <span class="qs-arrow">→</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Recent Interviews -->
+        <div class="dash-card wide">
+          <div class="dash-card-header">
+            <h3>Recent Interviews</h3>
+            <a href="history.html" class="view-all">View All →</a>
+          </div>
+          <div class="recent-list" id="recentList">
+            <div class="empty-state">
+              <span>🎤</span>
+              <p>No interviews yet. <a href="setup.html">Start your first one!</a></p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+    import { getFirestore, collection, query, where, orderBy, limit, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    window.firebaseAuth = auth;
+    window.firebaseDB = db;
+    window.firebaseFunctions = { signOut, collection, query, where, orderBy, limit, getDocs, doc, getDoc };
+
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = 'auth.html';
+      } else {
+        window.currentUser = user;
+        window.dispatchEvent(new CustomEvent('userReady', { detail: user }));
+      }
+    });
+  </script>
+  <script src="js/main.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

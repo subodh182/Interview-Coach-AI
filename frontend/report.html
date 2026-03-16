@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InterviewAI – Interview Report</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/report.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dark-mode">
+  <div class="noise-overlay"></div>
+
+  <nav class="report-nav">
+    <a href="dashboard.html" class="back-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Dashboard
+    </a>
+    <div class="nav-brand">⬡ Interview<span class="accent">AI</span></div>
+    <div class="report-nav-actions">
+      <button class="btn-outline" id="downloadPDFBtn">📄 Download PDF</button>
+      <button class="theme-toggle" id="themeToggle"><span class="theme-icon">☽</span></button>
+    </div>
+  </nav>
+
+  <div class="report-container" id="reportContent">
+    <div class="report-loading" id="reportLoading">
+      <div class="spinner"></div>
+      <p>Loading your report...</p>
+    </div>
+
+    <div class="report-main hidden" id="reportMain">
+      <!-- Hero -->
+      <div class="report-hero">
+        <div class="rh-left">
+          <div class="score-trophy" id="scoreTrophy">🏆</div>
+          <div>
+            <h2 id="reportTitle">Interview Complete!</h2>
+            <p id="reportSubtitle" class="rh-sub"></p>
+            <p id="reportDate" class="report-date"></p>
+          </div>
+        </div>
+        <div class="rh-score">
+          <div class="big-score-ring">
+            <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" class="ring-bg"/><circle cx="60" cy="60" r="50" class="ring-fill" id="bigScoreRing"/></svg>
+            <div class="big-score-center">
+              <span id="bigScore">0</span>
+              <span>/100</span>
+            </div>
+          </div>
+          <div class="score-grade" id="scoreGrade">--</div>
+        </div>
+      </div>
+
+      <!-- Breakdown Bars -->
+      <div class="score-breakdown">
+        <div class="sb-item">
+          <span class="sb-label">Correctness</span>
+          <div class="progress-bar"><div class="progress-fill" id="sbCorrectness" style="width:0%"></div></div>
+          <span class="sb-score" id="sbCorrectnessScore">0%</span>
+        </div>
+        <div class="sb-item">
+          <span class="sb-label">Communication</span>
+          <div class="progress-bar"><div class="progress-fill" id="sbComm" style="width:0%;--fill-color:var(--accent-2)"></div></div>
+          <span class="sb-score" id="sbCommScore">0%</span>
+        </div>
+        <div class="sb-item">
+          <span class="sb-label">Confidence</span>
+          <div class="progress-bar"><div class="progress-fill" id="sbConf" style="width:0%;--fill-color:var(--accent-3)"></div></div>
+          <span class="sb-score" id="sbConfScore">0%</span>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="report-stats-grid">
+        <div class="rs-card"><span class="rs-icon">❓</span><span class="rs-num" id="rsTotalQ">0</span><span class="rs-label">Total Questions</span></div>
+        <div class="rs-card"><span class="rs-icon">✅</span><span class="rs-num" id="rsAnswered">0</span><span class="rs-label">Answered</span></div>
+        <div class="rs-card"><span class="rs-icon">⏭</span><span class="rs-num" id="rsSkipped">0</span><span class="rs-label">Skipped</span></div>
+        <div class="rs-card"><span class="rs-icon">⏱</span><span class="rs-num" id="rsDuration">--</span><span class="rs-label">Duration</span></div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="report-charts-grid">
+        <div class="rc-card wide">
+          <h3>Question-by-Question Scores</h3>
+          <div class="chart-wrap"><canvas id="qScoreChart"></canvas></div>
+        </div>
+        <div class="rc-card">
+          <h3>Communication Breakdown</h3>
+          <div class="comm-stats" id="commStats">
+            <div class="cs-item"><span class="cs-icon">🔤</span><div class="cs-info"><span class="cs-label">Total Words</span><span class="cs-val" id="csTotalWords">--</span></div></div>
+            <div class="cs-item"><span class="cs-icon">⚠️</span><div class="cs-info"><span class="cs-label">Filler Words</span><span class="cs-val warn" id="csFillers">--</span></div></div>
+            <div class="cs-item"><span class="cs-icon">😊</span><div class="cs-info"><span class="cs-label">Overall Tone</span><span class="cs-val" id="csTone">--</span></div></div>
+            <div class="cs-item"><span class="cs-icon">💪</span><div class="cs-info"><span class="cs-label">Avg Confidence</span><span class="cs-val good" id="csConf">--</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Tips -->
+      <div class="ai-tips-card">
+        <div class="atc-header">
+          <span class="atc-icon">🤖</span>
+          <h3>AI Personalized Feedback</h3>
+        </div>
+        <div class="atc-content" id="aiTipsContent">
+          <div class="tip-loading"><div class="spinner small"></div><span>Generating personalized tips...</span></div>
+        </div>
+      </div>
+
+      <!-- Q&A Review -->
+      <div class="qa-review">
+        <h3>Detailed Question Review</h3>
+        <div class="qa-list" id="qaList"></div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="report-actions">
+        <a href="setup.html" class="btn-hero-primary">
+          🎤 Practice Again
+        </a>
+        <a href="dashboard.html" class="btn-outline large">
+          📊 View Dashboard
+        </a>
+        <a href="leaderboard.html" class="btn-outline large">
+          🏆 Leaderboard
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY", authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID", storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID", appId: "YOUR_APP_ID"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    window.firebaseAuth = auth;
+    window.firebaseDB = db;
+    window.firebaseFunctions = { doc, getDoc };
+    auth.onAuthStateChanged(user => {
+      if (!user) window.location.href = 'auth.html';
+      else { window.currentUser = user; window.dispatchEvent(new CustomEvent('userReady', { detail: user })); }
+    });
+  </script>
+  <script src="js/main.js"></script>
+  <script src="js/report.js"></script>
+</body>
+</html>

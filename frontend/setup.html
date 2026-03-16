@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InterviewAI – Setup Interview</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/setup.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+</head>
+<body class="dark-mode">
+  <div class="noise-overlay"></div>
+
+  <!-- Nav -->
+  <nav class="setup-nav">
+    <a href="dashboard.html" class="back-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Dashboard
+    </a>
+    <div class="nav-brand">
+      <span class="brand-icon">⬡</span>
+      <span>Interview<span class="accent">AI</span></span>
+    </div>
+    <button class="theme-toggle" id="themeToggle"><span class="theme-icon">☽</span></button>
+  </nav>
+
+  <div class="setup-layout">
+    <!-- Step Indicator -->
+    <div class="steps-indicator">
+      <div class="step-dot active" data-step="1">1</div>
+      <div class="step-line"></div>
+      <div class="step-dot" data-step="2">2</div>
+      <div class="step-line"></div>
+      <div class="step-dot" data-step="3">3</div>
+    </div>
+
+    <!-- Step 1: Role & Config -->
+    <div class="setup-step active" id="step1">
+      <div class="step-header">
+        <span class="step-tag">Step 1 of 3</span>
+        <h2>Choose Your <span class="gradient-text">Interview Type</span></h2>
+        <p>Select your role, difficulty, and interview mode</p>
+      </div>
+
+      <!-- Role Selection -->
+      <div class="setup-section">
+        <label class="setup-label">🎯 Job Role</label>
+        <div class="role-picker" id="rolePicker">
+          <div class="role-option" data-role="frontend">
+            <span class="role-opt-icon">🌐</span>
+            <span class="role-opt-name">Frontend Developer</span>
+            <span class="role-opt-tags">HTML, CSS, JS, React</span>
+          </div>
+          <div class="role-option" data-role="backend">
+            <span class="role-opt-icon">⚙️</span>
+            <span class="role-opt-name">Backend Developer</span>
+            <span class="role-opt-tags">Node, API, DB, REST</span>
+          </div>
+          <div class="role-option" data-role="fullstack">
+            <span class="role-opt-icon">💻</span>
+            <span class="role-opt-name">Full Stack Developer</span>
+            <span class="role-opt-tags">Frontend + Backend</span>
+          </div>
+          <div class="role-option" data-role="java">
+            <span class="role-opt-icon">☕</span>
+            <span class="role-opt-name">Java Developer</span>
+            <span class="role-opt-tags">OOP, Spring, JVM</span>
+          </div>
+          <div class="role-option" data-role="python">
+            <span class="role-opt-icon">🐍</span>
+            <span class="role-opt-name">Python Developer</span>
+            <span class="role-opt-tags">Django, Flask, Scripts</span>
+          </div>
+          <div class="role-option" data-role="devops">
+            <span class="role-opt-icon">🔧</span>
+            <span class="role-opt-name">DevOps Engineer</span>
+            <span class="role-opt-tags">Docker, CI/CD, Cloud</span>
+          </div>
+          <div class="role-option" data-role="datascience">
+            <span class="role-opt-icon">📊</span>
+            <span class="role-opt-name">Data Science</span>
+            <span class="role-opt-tags">ML, Analytics, Python</span>
+          </div>
+          <div class="role-option" data-role="android">
+            <span class="role-opt-icon">📱</span>
+            <span class="role-opt-name">Android Developer</span>
+            <span class="role-opt-tags">Kotlin, Java, Android</span>
+          </div>
+          <div class="role-option" data-role="hr">
+            <span class="role-opt-icon">💼</span>
+            <span class="role-opt-name">HR Interview</span>
+            <span class="role-opt-tags">Behavioral, Soft Skills</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Difficulty -->
+      <div class="setup-section">
+        <label class="setup-label">⚡ Difficulty Level</label>
+        <div class="difficulty-picker">
+          <button class="diff-btn" data-diff="easy">
+            <span class="diff-icon">🟢</span>
+            <span class="diff-name">Easy</span>
+            <span class="diff-desc">Basic concepts, 5-8 questions</span>
+          </button>
+          <button class="diff-btn active" data-diff="medium">
+            <span class="diff-icon">🟡</span>
+            <span class="diff-name">Medium</span>
+            <span class="diff-desc">Core topics, 8-12 questions</span>
+          </button>
+          <button class="diff-btn" data-diff="hard">
+            <span class="diff-icon">🔴</span>
+            <span class="diff-name">Hard</span>
+            <span class="diff-desc">Advanced, 12-15 questions</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Interview Mode -->
+      <div class="setup-section">
+        <label class="setup-label">🎤 Interview Mode</label>
+        <div class="mode-picker">
+          <button class="mode-btn active" data-mode="technical">
+            <span class="mode-icon">💻</span>
+            <div>
+              <span class="mode-name">Technical</span>
+              <span class="mode-desc">Coding + Concepts</span>
+            </div>
+          </button>
+          <button class="mode-btn" data-mode="hr">
+            <span class="mode-icon">🤝</span>
+            <div>
+              <span class="mode-name">HR Round</span>
+              <span class="mode-desc">Behavioral + Soft Skills</span>
+            </div>
+          </button>
+          <button class="mode-btn" data-mode="mixed">
+            <span class="mode-icon">🎯</span>
+            <div>
+              <span class="mode-name">Mixed</span>
+              <span class="mode-desc">Technical + HR</span>
+            </div>
+          </button>
+          <button class="mode-btn" data-mode="coding">
+            <span class="mode-icon">⌨️</span>
+            <div>
+              <span class="mode-name">Coding Only</span>
+              <span class="mode-desc">DSA + Problem Solving</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Target Company (Optional) -->
+      <div class="setup-section">
+        <label class="setup-label">🏢 Target Company Style <span class="optional">(Optional)</span></label>
+        <div class="company-picker" id="companyPicker">
+          <div class="company-opt" data-company="google">
+            <span>🔍</span> Google
+          </div>
+          <div class="company-opt" data-company="amazon">
+            <span>📦</span> Amazon
+          </div>
+          <div class="company-opt" data-company="microsoft">
+            <span>🪟</span> Microsoft
+          </div>
+          <div class="company-opt" data-company="meta">
+            <span>👤</span> Meta
+          </div>
+          <div class="company-opt" data-company="startup">
+            <span>🚀</span> Startup
+          </div>
+          <div class="company-opt" data-company="none">
+            <span>🎲</span> General
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-next" id="nextStep1">
+        Continue to JD Setup
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+
+    <!-- Step 2: JD & Resume -->
+    <div class="setup-step" id="step2">
+      <div class="step-header">
+        <span class="step-tag">Step 2 of 3</span>
+        <h2>Personalize Your <span class="gradient-text">Interview</span></h2>
+        <p>Add JD or resume to get tailored questions</p>
+      </div>
+
+      <div class="setup-section">
+        <label class="setup-label">📋 Job Description <span class="optional">(Optional – adds JD-specific questions)</span></label>
+        <textarea id="jdInput" rows="6" placeholder="Paste the job description here...&#10;&#10;Example:&#10;We're looking for a React developer with 2+ years of experience in building scalable web applications. Must know Redux, REST APIs, and TypeScript..."></textarea>
+      </div>
+
+      <div class="setup-section">
+        <label class="setup-label">📄 Resume / CV <span class="optional">(Optional – generates resume-based questions)</span></label>
+        <div class="upload-area" id="uploadArea">
+          <div class="upload-icon">📤</div>
+          <p>Drag & drop your PDF resume here<br /><span>or click to browse</span></p>
+          <input type="file" id="resumeFile" accept=".pdf,.txt,.doc,.docx" hidden />
+        </div>
+        <div class="file-preview hidden" id="filePreview">
+          <span class="file-icon">📄</span>
+          <span class="file-name" id="fileName">resume.pdf</span>
+          <button class="remove-file" id="removeFile">✕</button>
+        </div>
+      </div>
+
+      <div class="setup-section">
+        <label class="setup-label">⏱️ Answer Time Limit</label>
+        <div class="time-picker">
+          <button class="time-btn" data-time="60">1 min</button>
+          <button class="time-btn active" data-time="120">2 min</button>
+          <button class="time-btn" data-time="180">3 min</button>
+          <button class="time-btn" data-time="300">5 min</button>
+          <button class="time-btn" data-time="0">Unlimited</button>
+        </div>
+      </div>
+
+      <div class="step-buttons">
+        <button class="btn-back" id="backStep2">← Back</button>
+        <button class="btn-next" id="nextStep2">
+          Preview & Start
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 3: Preview & Launch -->
+    <div class="setup-step" id="step3">
+      <div class="step-header">
+        <span class="step-tag">Step 3 of 3</span>
+        <h2>Ready to <span class="gradient-text">Interview?</span></h2>
+        <p>Review your configuration and start</p>
+      </div>
+
+      <div class="preview-card" id="previewCard">
+        <div class="preview-row">
+          <span class="prev-label">Role</span>
+          <span class="prev-val" id="prevRole">-</span>
+        </div>
+        <div class="preview-row">
+          <span class="prev-label">Difficulty</span>
+          <span class="prev-val" id="prevDiff">-</span>
+        </div>
+        <div class="preview-row">
+          <span class="prev-label">Mode</span>
+          <span class="prev-val" id="prevMode">-</span>
+        </div>
+        <div class="preview-row">
+          <span class="prev-label">Company Style</span>
+          <span class="prev-val" id="prevCompany">General</span>
+        </div>
+        <div class="preview-row">
+          <span class="prev-label">Time per Answer</span>
+          <span class="prev-val" id="prevTime">-</span>
+        </div>
+        <div class="preview-row">
+          <span class="prev-label">JD Provided</span>
+          <span class="prev-val" id="prevJD">No</span>
+        </div>
+        <div class="preview-row">
+          <span class="prev-label">Resume Provided</span>
+          <span class="prev-val" id="prevResume">No</span>
+        </div>
+      </div>
+
+      <div class="tips-card">
+        <h4>💡 Tips for a better interview</h4>
+        <ul>
+          <li>Speak clearly and at a moderate pace</li>
+          <li>Use the STAR method for behavioral questions</li>
+          <li>It's okay to take a few seconds to think before answering</li>
+          <li>Ensure your microphone is working properly</li>
+        </ul>
+      </div>
+
+      <div class="step-buttons">
+        <button class="btn-back" id="backStep3">← Back</button>
+        <button class="btn-launch" id="launchInterview">
+          <span class="launch-icon">🎤</span>
+          Launch Interview
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+  <script src="js/main.js"></script>
+  <script src="js/setup.js"></script>
+</body>
+</html>
