@@ -1,0 +1,36 @@
+{
+  "version": 2,
+  "name": "interviewai",
+  "buildCommand": "cd backend && npm install",
+  "outputDirectory": "frontend",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/backend/server.js"
+    },
+    {
+      "src": "/(.*\\.(css|js|png|jpg|svg|ico|woff|woff2))",
+      "dest": "/frontend/$1"
+    },
+    {
+      "src": "/(.*)\\.html",
+      "dest": "/frontend/$1.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/index.html"
+    }
+  ],
+  "functions": {
+    "backend/server.js": {
+      "runtime": "nodejs18.x",
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "NODE_ENV": "production"
+  }
+}
