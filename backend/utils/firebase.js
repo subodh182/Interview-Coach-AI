@@ -24,7 +24,10 @@ function initFirebase() {
       });
     }
 
-    db = admin.firestore();
+    // db = admin.firestore();
+    const { getDatabase } = require('firebase-admin/database');
+    db = getDatabase();
+    
     auth = admin.auth();
     console.log('✓ Firebase Admin initialized');
   } catch (err) {
@@ -38,38 +41,37 @@ function initFirebase() {
 }
 
 // Mock DB for development without Firebase creds
+// NAYA Mock DB for Realtime Database style
 function createMockDB() {
   const store = {};
   return {
-    collection: (col) => ({
-      doc: (id) => ({
-        set: async (data) => { store[`${col}/${id}`] = { ...data, id }; return true; },
-        get: async () => {
-          const d = store[`${col}/${id}`];
-          return { exists: !!d, data: () => d, id };
-        },
-        update: async (data) => {
-          store[`${col}/${id}`] = { ...store[`${col}/${id}`], ...data };
-          return true;
-        },
+    ref: (path) => ({
+      set:    async (data) => { store[path] = data; },
+      update: async (data) => { store[path] = { ...store[path], ...data }; },
+      get:    async () => ({
+        exists: () => !!store[path],
+        val:    () => store[path] || null,
       }),
-      add: async (data) => {
+      push:   async (data) => {
         const id = 'mock_' + Date.now();
-        store[`${col}/${id}`] = { ...data, id };
-        return { id };
+        store[`${path}/${id}`] = data;
+        return { key: id };
       },
-      where: () => ({
-        orderBy: () => ({
-          limit: () => ({ get: async () => ({ forEach: () => {}, docs: [] }) }),
-          get: async () => ({ forEach: () => {}, docs: [] }),
+      orderByChild: (field) => ({
+        limitToLast: (n) => ({
+          get: async () => ({
+            exists: () => false,
+            forEach: () => {},
+          }),
         }),
-        get: async () => ({ forEach: () => {}, docs: [] }),
+        equalTo: (val) => ({
+          get: async () => ({ exists: () => false, forEach: () => {} }),
+        }),
       }),
-      orderBy: () => ({
-        limit: () => ({ get: async () => ({ forEach: () => {}, docs: [] }) }),
-      }),
+      on:  (event, cb) => cb({ val: () => null }),
+      off: () => {},
     }),
-    FieldValue: { serverTimestamp: () => new Date(), increment: (n) => n },
+    ServerValue: { TIMESTAMP: Date.now() },
   };
 }
 
