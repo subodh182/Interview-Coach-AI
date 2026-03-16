@@ -20,19 +20,20 @@ router.post('/generate-questions', optionalAuth, async (req, res) => {
     const questions = await generateInterviewQuestions(config);
     const interviewId = uuidv4();
 
-    // Save interview session to Firestore
     if (req.user?.uid) {
-      await db.collection('interviews').doc(interviewId).set({
+      await db.ref(`interviews/${interviewId}`).set({
         id: interviewId,
         userId: req.user.uid,
-        role, difficulty, mode,
+        role,
+        difficulty,
+        mode,
         company: config.company || 'none',
         questions,
         answers: [],
         scores: [],
         score: 0,
         status: 'in_progress',
-        createdAt: new Date(),
+        createdAt: Date.now(),
         jdProvided: !!config.jd,
         resumeProvided: !!config.resumeText,
       });
@@ -53,16 +54,13 @@ router.post('/evaluate-answer', optionalAuth, async (req, res) => {
 
     const evaluation = await evaluateAnswer({ question, answer, role, difficulty });
 
-    // Save answer to Firestore
     if (req.user?.uid && interviewId) {
-      const ref = db.collection('interviews').doc(interviewId);
-      const snap = await ref.get();
-      if (snap.exists()) {
-        const data = snap.data();
-        const answers = data.answers || [];
-        answers[questionIndex] = { question, answer, evaluation, answeredAt: new Date() };
-        await ref.update({ answers });
-      }
+      await db.ref(`interviews/${interviewId}/answers/${questionIndex}`).set({
+        question,
+        answer,
+        evaluation,
+        answeredAt: Date.now()
+      });
     }
 
     res.json(evaluation);
@@ -88,6 +86,7 @@ router.post('/save-results', optionalAuth, async (req, res) => {
       acc.confidence += s.categories?.confidence || 0;
       return acc;
     }, { correctness: 0, communication: 0, confidence: 0 });
+
     const n = validScores.length || 1;
 
     const resultData = {
@@ -101,29 +100,25 @@ router.post('/save-results', optionalAuth, async (req, res) => {
       },
       config,
       status: 'completed',
-      completedAt: new Date(),
+      completedAt: Date.now(),
       duration: null,
     };
 
-    // Save to Firestore
-    if (req.user?.uid && interviewId && interviewId !== 'demo_' + interviewId.split('demo_')[1]) {
-      const ref = db.collection('interviews').doc(interviewId);
-      await ref.update(resultData);
+    if (req.user?.uid && interviewId) {
+      await db.ref(`interviews/${interviewId}`).update(resultData);
 
-      // Update user stats
-      const userRef = db.collection('users').doc(req.user.uid);
-      const userSnap = await userRef.get();
-      if (userSnap.exists()) {
-        const userData = userSnap.data();
-        const prevTotal = userData.totalInterviews || 0;
-        const prevAvg = userData.avgScore || 0;
-        const newAvg = Math.round((prevAvg * prevTotal + avgScore) / (prevTotal + 1));
-        await userRef.update({
-          totalInterviews: prevTotal + 1,
-          avgScore: newAvg,
-          lastInterviewAt: new Date(),
-        });
-      }
+      const userSnap = await db.ref(`users/${req.user.uid}`).get();
+      const userData = userSnap.val() || {};
+
+      const prevTotal = userData.totalInterviews || 0;
+      const prevAvg = userData.avgScore || 0;
+      const newAvg = Math.round((prevAvg * prevTotal + avgScore) / (prevTotal + 1));
+
+      await db.ref(`users/${req.user.uid}`).update({
+        totalInterviews: prevTotal + 1,
+        avgScore: newAvg,
+        lastInterviewAt: Date.now(),
+      });
     }
 
     res.json({ success: true, interviewId, avgScore, resultData });
@@ -136,14 +131,16 @@ router.post('/save-results', optionalAuth, async (req, res) => {
 // ─── GET /api/interview/:id ────────────────────────
 router.get('/:id', optionalAuth, async (req, res) => {
   try {
-    const snap = await db.collection('interviews').doc(req.params.id).get();
+    const snap = await db.ref(`interviews/${req.params.id}`).get();
     if (!snap.exists()) return res.status(404).json({ error: 'Interview not found' });
-    const data = snap.data();
-    // Only return if belongs to user
+
+    const data = snap.val();
+
     if (req.user && data.userId !== req.user.uid) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
-    res.json({ id: snap.id, ...data });
+
+    res.json({ id: req.params.id, ...data });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch interview' });
   }
@@ -152,19 +149,15 @@ router.get('/:id', optionalAuth, async (req, res) => {
 // ─── GET /api/interview/history ───────────────────
 router.get('/history/list', verifyToken, async (req, res) => {
   try {
-    const { limit = 20 } = req.query;
-    const q = await db.collection('interviews')
-      .where('userId', '==', req.user.uid)
-      .orderBy('createdAt', 'desc')
-      .limit(parseInt(limit))
-      .get();
+    const snap = await db.ref(`userInterviews/${req.user.uid}`).get();
+    if (!snap.exists()) return res.json({ interviews: [] });
 
     const interviews = [];
-    q.forEach(doc => {
-      const d = doc.data();
-      interviews.push({ id: doc.id, role: d.role, mode: d.mode, difficulty: d.difficulty, score: d.score, status: d.status, createdAt: d.createdAt });
-    });
-    res.json({ interviews });
+    snap.forEach(child => interviews.push({ id: child.key, ...child.val() }));
+
+    interviews.sort((a, b) => b.createdAt - a.createdAt);
+
+    res.json({ interviews: interviews.slice(0, 20) });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch history' });
   }
@@ -174,7 +167,9 @@ router.get('/history/list', verifyToken, async (req, res) => {
 router.post('/upload-resume', upload.single('resume'), optionalAuth, async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+
     let text = '';
+
     if (req.file.mimetype === 'text/plain') {
       text = req.file.buffer.toString('utf-8').slice(0, 2000);
     } else if (req.file.mimetype === 'application/pdf') {
@@ -182,8 +177,11 @@ router.post('/upload-resume', upload.single('resume'), optionalAuth, async (req,
         const pdfParse = require('pdf-parse');
         const data = await pdfParse(req.file.buffer);
         text = data.text.slice(0, 2000);
-      } catch { text = ''; }
+      } catch {
+        text = '';
+      }
     }
+
     res.json({ success: true, text, filename: req.file.originalname });
   } catch (err) {
     res.status(500).json({ error: 'Resume upload failed' });
