@@ -4,164 +4,329 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>InterviewAI – Profile</title>
+
   <link rel="stylesheet" href="css/main.css"/>
   <link rel="stylesheet" href="css/dashboard.css"/>
   <link rel="stylesheet" href="css/profile.css"/>
+
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 </head>
+
 <body class="dark-mode">
-  <div class="noise-overlay"></div>
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand"><span class="brand-icon">⬡</span><span>Interview<span class="accent">AI</span></span></div>
-    <nav class="sidebar-nav">
-      <a href="dashboard.html" class="nav-item"><span class="nav-icon">📊</span><span>Dashboard</span></a>
-      <a href="setup.html" class="nav-item"><span class="nav-icon">🎯</span><span>Start Interview</span></a>
-      <a href="history.html" class="nav-item"><span class="nav-icon">📋</span><span>History</span></a>
-      <a href="leaderboard.html" class="nav-item"><span class="nav-icon">🏆</span><span>Leaderboard</span></a>
-      <a href="profile.html" class="nav-item active"><span class="nav-icon">👤</span><span>Profile</span></a>
-    </nav>
-    <div class="sidebar-footer">
-      <button class="sidebar-theme" id="sidebarThemeToggle"><span class="theme-icon">☽</span><span>Toggle Theme</span></button>
-      <button class="logout-btn" id="logoutBtn"><span>🚪</span><span>Logout</span></button>
-    </div>
-  </aside>
-  <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-  <div class="main-layout">
-    <header class="topbar">
-      <div class="topbar-left">
-        <button class="hamburger-sidebar" id="sidebarToggle"><span></span><span></span><span></span></button>
-        <div class="topbar-greeting">My <span class="accent">Profile</span></div>
-      </div>
-      <div class="topbar-right">
-        <button class="theme-toggle" id="topThemeToggle"><span class="theme-icon">☽</span></button>
-      </div>
-    </header>
+<div class="noise-overlay"></div>
 
-    <main class="main-content">
-      <div class="profile-layout">
+<aside class="sidebar" id="sidebar">
 
-        <!-- Profile Card -->
-        <div class="profile-card">
-          <div class="profile-avatar-wrap">
-            <div class="profile-avatar" id="profileAvatar">U</div>
-            <div class="avatar-online-dot"></div>
-          </div>
-          <div class="profile-name" id="profileName">Loading...</div>
-          <div class="profile-email" id="profileEmail"></div>
-          <div class="profile-role-badge" id="profileRoleBadge">--</div>
-          <div class="profile-stats-row">
-            <div class="ps-stat">
-              <span class="ps-num" id="psInterviews">0</span>
-              <span class="ps-label">Interviews</span>
-            </div>
-            <div class="ps-divider"></div>
-            <div class="ps-stat">
-              <span class="ps-num" id="psAvgScore">0%</span>
-              <span class="ps-label">Avg Score</span>
-            </div>
-            <div class="ps-divider"></div>
-            <div class="ps-stat">
-              <span class="ps-num" id="psStreak">0🔥</span>
-              <span class="ps-label">Streak</span>
-            </div>
-          </div>
-        </div>
+<div class="sidebar-brand">
+<span class="brand-icon">⬡</span>
+<span>Interview<span class="accent">AI</span></span>
+</div>
 
-        <!-- Edit Profile Form -->
-        <div class="profile-form-card">
-          <h3>Edit Profile</h3>
-          <div class="form-row">
-            <div class="input-group">
-              <label>First Name</label>
-              <input type="text" id="editFirstName" placeholder="Rahul"/>
-            </div>
-            <div class="input-group">
-              <label>Last Name</label>
-              <input type="text" id="editLastName" placeholder="Sharma"/>
-            </div>
-          </div>
-          <div class="input-group">
-            <label>Email</label>
-            <input type="email" id="editEmail" disabled/>
-          </div>
-          <div class="input-group">
-            <label>Target Role</label>
-            <select id="editRole">
-              <option value="frontend">Frontend Developer</option>
-              <option value="backend">Backend Developer</option>
-              <option value="fullstack">Full Stack Developer</option>
-              <option value="java">Java Developer</option>
-              <option value="python">Python Developer</option>
-              <option value="devops">DevOps Engineer</option>
-              <option value="datascience">Data Scientist</option>
-              <option value="android">Android Developer</option>
-              <option value="hr">HR Interview</option>
-            </select>
-          </div>
-          <button class="btn-auth" id="saveProfileBtn" style="margin-top:8px">
-            <span>Save Changes</span>
-          </button>
-        </div>
+<nav class="sidebar-nav">
 
-        <!-- Achievements -->
-        <div class="achievements-card">
-          <h3>🏅 Achievements</h3>
-          <div class="achievements-grid" id="achievementsGrid">
-            <div class="achievement locked" data-unlock="1">
-              <span class="ach-icon">🎤</span>
-              <span class="ach-name">First Interview</span>
-              <span class="ach-desc">Complete 1 interview</span>
-            </div>
-            <div class="achievement locked" data-unlock="5">
-              <span class="ach-icon">🔥</span>
-              <span class="ach-name">On Fire</span>
-              <span class="ach-desc">5 interviews done</span>
-            </div>
-            <div class="achievement locked" data-unlock="10">
-              <span class="ach-icon">💎</span>
-              <span class="ach-name">Diamond Coder</span>
-              <span class="ach-desc">10 interviews done</span>
-            </div>
-            <div class="achievement locked" data-unlock-score="80">
-              <span class="ach-icon">⭐</span>
-              <span class="ach-name">High Scorer</span>
-              <span class="ach-desc">Score 80%+ in any interview</span>
-            </div>
-            <div class="achievement locked" data-streak="3">
-              <span class="ach-icon">📅</span>
-              <span class="ach-name">Consistent</span>
-              <span class="ach-desc">3-day streak</span>
-            </div>
-            <div class="achievement locked" data-streak="7">
-              <span class="ach-icon">🏆</span>
-              <span class="ach-name">Week Warrior</span>
-              <span class="ach-desc">7-day streak</span>
-            </div>
-          </div>
-        </div>
+<a href="dashboard.html" class="nav-item">
+<span class="nav-icon">📊</span>
+<span>Dashboard</span>
+</a>
 
-      </div>
-    </main>
-  </div>
+<a href="setup.html" class="nav-item">
+<span class="nav-icon">🎯</span>
+<span>Start Interview</span>
+</a>
 
-  <div class="toast-container" id="toastContainer"></div>
+<a href="history.html" class="nav-item">
+<span class="nav-icon">📋</span>
+<span>History</span>
+</a>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-    const firebaseConfig = { apiKey:"YOUR_API_KEY",authDomain:"YOUR_AUTH_DOMAIN",projectId:"YOUR_PROJECT_ID",storageBucket:"YOUR_STORAGE_BUCKET",messagingSenderId:"YOUR_MESSAGING_SENDER_ID",appId:"YOUR_APP_ID" };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app); const db = getFirestore(app);
-    window.firebaseAuth = auth; window.firebaseDB = db;
-    window.firebaseFunctions = { signOut, doc, getDoc, updateDoc };
-    auth.onAuthStateChanged(user => {
-      if (!user) location.href = 'auth.html';
-      else { window.currentUser = user; window.dispatchEvent(new CustomEvent('userReady', { detail: user })); }
-    });
-  </script>
-  <script src="js/main.js"></script>
-  <script src="js/profile.js"></script>
+<a href="leaderboard.html" class="nav-item">
+<span class="nav-icon">🏆</span>
+<span>Leaderboard</span>
+</a>
+
+<a href="profile.html" class="nav-item active">
+<span class="nav-icon">👤</span>
+<span>Profile</span>
+</a>
+
+</nav>
+
+<div class="sidebar-footer">
+
+<button class="sidebar-theme" id="sidebarThemeToggle">
+<span class="theme-icon">☽</span>
+<span>Toggle Theme</span>
+</button>
+
+<button class="logout-btn" id="logoutBtn">
+<span>🚪</span>
+<span>Logout</span>
+</button>
+
+</div>
+
+</aside>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+
+<div class="main-layout">
+
+<header class="topbar">
+
+<div class="topbar-left">
+
+<button class="hamburger-sidebar" id="sidebarToggle">
+<span></span><span></span><span></span>
+</button>
+
+<div class="topbar-greeting">
+My <span class="accent">Profile</span>
+</div>
+
+</div>
+
+<div class="topbar-right">
+
+<button class="theme-toggle" id="topThemeToggle">
+<span class="theme-icon">☽</span>
+</button>
+
+</div>
+
+</header>
+
+
+<main class="main-content">
+
+<div class="profile-layout">
+
+<!-- Profile Card -->
+
+<div class="profile-card">
+
+<div class="profile-avatar-wrap">
+
+<div class="profile-avatar" id="profileAvatar">U</div>
+
+<div class="avatar-online-dot"></div>
+
+</div>
+
+<div class="profile-name" id="profileName">Loading...</div>
+
+<div class="profile-email" id="profileEmail"></div>
+
+<div class="profile-role-badge" id="profileRoleBadge">--</div>
+
+
+<div class="profile-stats-row">
+
+<div class="ps-stat">
+<span class="ps-num" id="psInterviews">0</span>
+<span class="ps-label">Interviews</span>
+</div>
+
+<div class="ps-divider"></div>
+
+<div class="ps-stat">
+<span class="ps-num" id="psAvgScore">0%</span>
+<span class="ps-label">Avg Score</span>
+</div>
+
+<div class="ps-divider"></div>
+
+<div class="ps-stat">
+<span class="ps-num" id="psStreak">0🔥</span>
+<span class="ps-label">Streak</span>
+</div>
+
+</div>
+
+</div>
+
+
+<!-- Edit Profile -->
+
+<div class="profile-form-card">
+
+<h3>Edit Profile</h3>
+
+<div class="form-row">
+
+<div class="input-group">
+<label>First Name</label>
+<input type="text" id="editFirstName" placeholder="Rahul"/>
+</div>
+
+<div class="input-group">
+<label>Last Name</label>
+<input type="text" id="editLastName" placeholder="Sharma"/>
+</div>
+
+</div>
+
+
+<div class="input-group">
+
+<label>Email</label>
+
+<input type="email" id="editEmail" disabled/>
+
+</div>
+
+
+<div class="input-group">
+
+<label>Target Role</label>
+
+<select id="editRole">
+
+<option value="frontend">Frontend Developer</option>
+<option value="backend">Backend Developer</option>
+<option value="fullstack">Full Stack Developer</option>
+<option value="java">Java Developer</option>
+<option value="python">Python Developer</option>
+<option value="devops">DevOps Engineer</option>
+<option value="datascience">Data Scientist</option>
+<option value="android">Android Developer</option>
+<option value="hr">HR Interview</option>
+
+</select>
+
+</div>
+
+
+<button class="btn-auth" id="saveProfileBtn" style="margin-top:8px">
+<span>Save Changes</span>
+</button>
+
+</div>
+
+
+<!-- Achievements -->
+
+<div class="achievements-card">
+
+<h3>🏅 Achievements</h3>
+
+<div class="achievements-grid" id="achievementsGrid">
+
+<div class="achievement locked" data-unlock="1">
+<span class="ach-icon">🎤</span>
+<span class="ach-name">First Interview</span>
+<span class="ach-desc">Complete 1 interview</span>
+</div>
+
+<div class="achievement locked" data-unlock="5">
+<span class="ach-icon">🔥</span>
+<span class="ach-name">On Fire</span>
+<span class="ach-desc">5 interviews done</span>
+</div>
+
+<div class="achievement locked" data-unlock="10">
+<span class="ach-icon">💎</span>
+<span class="ach-name">Diamond Coder</span>
+<span class="ach-desc">10 interviews done</span>
+</div>
+
+<div class="achievement locked" data-unlock-score="80">
+<span class="ach-icon">⭐</span>
+<span class="ach-name">High Scorer</span>
+<span class="ach-desc">Score 80%+ in any interview</span>
+</div>
+
+<div class="achievement locked" data-streak="3">
+<span class="ach-icon">📅</span>
+<span class="ach-name">Consistent</span>
+<span class="ach-desc">3-day streak</span>
+</div>
+
+<div class="achievement locked" data-streak="7">
+<span class="ach-icon">🏆</span>
+<span class="ach-name">Week Warrior</span>
+<span class="ach-desc">7-day streak</span>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</main>
+
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+
+import {
+getAuth,
+signOut
+} from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+
+import {
+getDatabase,
+ref,
+get,
+update
+} from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+
+
+const firebaseConfig = {
+apiKey:"YOUR_API_KEY",
+authDomain:"YOUR_AUTH_DOMAIN",
+projectId:"YOUR_PROJECT_ID",
+storageBucket:"YOUR_STORAGE_BUCKET",
+messagingSenderId:"YOUR_MESSAGING_SENDER_ID",
+appId:"YOUR_APP_ID"
+};
+
+
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+
+window.firebaseAuth = auth;
+window.firebaseDB = db;
+
+window.firebaseFunctions = {
+signOut,
+ref,
+get,
+update
+};
+
+
+auth.onAuthStateChanged(user => {
+
+if (!user) location.href = 'auth.html';
+
+else {
+
+window.currentUser = user;
+
+window.dispatchEvent(
+new CustomEvent('userReady', { detail: user })
+);
+
+}
+
+});
+
+</script>
+
+
+<script src="js/main.js"></script>
+<script src="js/profile.js"></script>
+
 </body>
 </html>
