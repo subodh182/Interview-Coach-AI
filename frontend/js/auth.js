@@ -97,7 +97,7 @@ async function handleSignup() {
 
   setLoading(btn, true, 'Creating account...');
   try {
-    const { createUserWithEmailAndPassword, updateProfile, doc, setDoc } = window.firebaseFunctions;
+    const { createUserWithEmailAndPassword, updateProfile, ref, set } = window.firebaseFunctions;
     const auth = window.firebaseAuth;
     const db = window.firebaseDB;
 
@@ -105,9 +105,10 @@ async function handleSignup() {
     const displayName = `${firstName} ${lastName}`.trim();
     await updateProfile(cred.user, { displayName });
 
-    // Save user to Firestore
-    await setDoc(doc(db, 'users', cred.user.uid), {
-      uid: cred.user.uid,
+    const uid = cred.user.uid;
+
+    const userData = {
+      uid: uid,
       firstName,
       lastName,
       displayName,
@@ -118,7 +119,9 @@ async function handleSignup() {
       avgScore: 0,
       streak: 0,
       rank: 0
-    });
+    };
+
+    await set(ref(db, `users/${uid}`), userData);
 
     Toast.success('Account created! Welcome to InterviewAI 🚀');
     setTimeout(() => window.location.href = 'dashboard.html', 800);
@@ -130,7 +133,7 @@ async function handleSignup() {
 
 async function handleGoogle() {
   try {
-    const { signInWithPopup, doc, setDoc, getDoc } = window.firebaseFunctions;
+    const { signInWithPopup, ref, set, get } = window.firebaseFunctions;
     const auth = window.firebaseAuth;
     const db = window.firebaseDB;
     const provider = window.googleProvider;
@@ -138,12 +141,15 @@ async function handleGoogle() {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
 
-    // Create user doc if doesn't exist
-    const userRef = doc(db, 'users', user.uid);
-    const snap = await getDoc(userRef);
-    if (!snap.exists()) {
+    const uid = user.uid;
+
+    const userRef = ref(db, `users/${uid}`);
+    const snap = await get(ref(db, `users/${uid}`));
+    const data = snap.val();
+
+    if (!data) {
       const [firstName, ...rest] = (user.displayName || 'User').split(' ');
-      await setDoc(userRef, {
+      const userData = {
         uid: user.uid,
         firstName,
         lastName: rest.join(' '),
@@ -156,7 +162,9 @@ async function handleGoogle() {
         avgScore: 0,
         streak: 0,
         rank: 0
-      });
+      };
+
+      await set(ref(db, `users/${uid}`), userData);
     }
 
     Toast.success('Signed in with Google! 🎉');
