@@ -540,7 +540,7 @@ MIT License – see [LICENSE](LICENSE) file for details.
 
 <div align="center">
 
-Made with ❤️ for students preparing for their dream jobs
+Made with subodh ❤️ for students preparing for their dream jobs
 
 **[⭐ Star this repo if it helped you!]**
 
