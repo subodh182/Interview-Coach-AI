@@ -81,6 +81,7 @@ async function handleSignup() {
   const role = document.getElementById('signupRole').value;
   const terms = document.getElementById('termsCheck').checked;
   const btn = document.getElementById('signupBtn');
+  if (!btn) return;
 
   if (!firstName || !email || !password) {
     Toast.error('Please fill in all required fields');
