@@ -175,12 +175,13 @@ async function handleGoogle() {
 }
 
 function setLoading(btn, loading, label) {
-  if (loading) {
-    btn.disabled = true;
-    btn.querySelector('span').textContent = label;
+  if (!btn) return;
+  btn.disabled = loading;
+  const span = btn.querySelector('span');
+  if (span) {
+    span.textContent = label;
   } else {
-    btn.disabled = false;
-    btn.querySelector('span').textContent = label;
+    btn.textContent = label;
   }
 }
 
