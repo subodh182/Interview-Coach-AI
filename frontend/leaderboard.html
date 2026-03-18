@@ -5,164 +5,128 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>InterviewAI – Leaderboard</title>
   <link rel="stylesheet" href="css/main.css"/>
+  <link rel="stylesheet" href="css/dashboard.css"/>
   <link rel="stylesheet" href="css/leaderboard.css"/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 </head>
-
 <body class="dark-mode">
-
 <div class="noise-overlay"></div>
 
-<nav class="report-nav">
-  <a href="dashboard.html" class="back-link">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M19 12H5M12 5l-7 7 7 7"/>
-    </svg>
-    Dashboard
-  </a>
-
-  <div class="nav-brand">
-    ⬡ Interview<span class="accent">AI</span>
+<!-- SIDEBAR — same as dashboard -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand"><span class="brand-icon">⬡</span><span>Interview<span class="accent">AI</span></span></div>
+  <nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-item"><span class="nav-icon">📊</span><span>Dashboard</span></a>
+    <a href="setup.html" class="nav-item"><span class="nav-icon">🎯</span><span>Start Interview</span></a>
+    <a href="history.html" class="nav-item"><span class="nav-icon">📋</span><span>History</span></a>
+    <a href="leaderboard.html" class="nav-item active"><span class="nav-icon">🏆</span><span>Leaderboard</span></a>
+    <a href="profile.html" class="nav-item"><span class="nav-icon">👤</span><span>Profile</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="sidebar-theme" id="sidebarThemeToggle"><span class="theme-icon">☽</span><span>Toggle Theme</span></button>
+    <button class="logout-btn" id="logoutBtn"><span>🚪</span><span>Logout</span></button>
   </div>
+</aside>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-  <button class="theme-toggle" id="themeToggle">
-    <span class="theme-icon">☽</span>
-  </button>
-</nav>
+<!-- MAIN LAYOUT -->
+<div class="main-layout">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger-sidebar" id="sidebarToggle"><span></span><span></span><span></span></button>
+      <div class="topbar-greeting">Global <span class="accent">Leaderboard</span></div>
+    </div>
+    <div class="topbar-right">
+      <button class="theme-toggle" id="topThemeToggle"><span class="theme-icon">☽</span></button>
+      <a href="setup.html" class="btn-primary">+ New Interview</a>
+      <div class="user-avatar" id="userAvatar" onclick="window.location.href='profile.html'" style="cursor:pointer">U</div>
+    </div>
+  </header>
 
-<div class="lb-container">
-
-  <div class="lb-header">
-    <span class="section-tag">Rankings</span>
-    <h2>🏆 Global <span class="gradient-text">Leaderboard</span></h2>
-    <p>Top performers this week. Compete and climb the ranks!</p>
-  </div>
-
-  <!-- Your Rank -->
-  <div class="your-rank-card hidden" id="yourRankCard">
-    <span class="yr-label">Your Rank</span>
-
-    <div class="yr-content">
-
-      <div class="yr-avatar" id="yrAvatar">U</div>
-
-      <div class="yr-info">
-        <span class="yr-name" id="yrName">You</span>
-        <span class="yr-stats" id="yrStats">0 interviews · 0% avg</span>
+  <main class="main-content">
+    <div class="lb-container">
+      <div class="lb-header">
+        <span class="section-tag">Rankings</span>
+        <h2>🏆 Global <span class="gradient-text">Leaderboard</span></h2>
+        <p>Top performers this week. Compete and climb the ranks!</p>
       </div>
 
-      <div class="yr-rank" id="yrRank">#--</div>
-      <div class="yr-score" id="yrScore">0%</div>
+      <!-- Your Rank Card -->
+      <div class="your-rank-card hidden" id="yourRankCard">
+        <span class="yr-label">Your Rank</span>
+        <div class="yr-content">
+          <div class="yr-avatar" id="yrAvatar">U</div>
+          <div class="yr-info">
+            <span class="yr-name" id="yrName">You</span>
+            <span class="yr-stats" id="yrStats">0 interviews · 0% avg</span>
+          </div>
+          <div class="yr-rank" id="yrRank">#--</div>
+          <div class="yr-score" id="yrScore">0%</div>
+        </div>
+      </div>
 
+      <!-- Filters -->
+      <div class="lb-filters">
+        <button class="lb-filter active" data-filter="all">All Time</button>
+        <button class="lb-filter" data-filter="month">This Month</button>
+        <button class="lb-filter" data-filter="week">This Week</button>
+        <select class="lb-role-filter" id="roleFilter">
+          <option value="">All Roles</option>
+          <option value="frontend">Frontend</option>
+          <option value="backend">Backend</option>
+          <option value="fullstack">Full Stack</option>
+          <option value="java">Java</option>
+          <option value="python">Python</option>
+          <option value="devops">DevOps</option>
+          <option value="datascience">Data Science</option>
+          <option value="android">Android</option>
+          <option value="hr">HR</option>
+        </select>
+      </div>
+
+      <!-- Podium Top 3 -->
+      <div class="podium" id="podium">
+        <div class="podium-loading"><div class="spinner"></div></div>
+      </div>
+
+      <!-- Full Rankings List -->
+      <div class="lb-list" id="lbList">
+        <div class="lb-loading"><div class="spinner"></div><span>Loading rankings...</span></div>
+      </div>
     </div>
-  </div>
-
-  <!-- Filters -->
-  <div class="lb-filters">
-
-    <button class="lb-filter active" data-filter="week">This Week</button>
-    <button class="lb-filter" data-filter="month">This Month</button>
-    <button class="lb-filter" data-filter="all">All Time</button>
-
-    <select class="lb-role-filter" id="roleFilter">
-      <option value="">All Roles</option>
-      <option value="frontend">Frontend</option>
-      <option value="backend">Backend</option>
-      <option value="java">Java</option>
-      <option value="python">Python</option>
-      <option value="hr">HR</option>
-    </select>
-
-  </div>
-
-  <!-- Podium -->
-  <div class="podium" id="podium">
-    <div class="podium-loading">
-      <div class="spinner"></div>
-    </div>
-  </div>
-
-  <!-- Leaderboard List -->
-  <div class="lb-list" id="lbList">
-    <div class="lb-loading">
-      <div class="spinner"></div>
-      <span>Loading rankings...</span>
-    </div>
-  </div>
-
+  </main>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
 
-
 <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+  import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyAmE3LJp-zxkcWwXCB1mwAjmU24KfUHwRI",
+    authDomain: "interviewai-82be8.firebaseapp.com",
+    databaseURL: "https://interviewai-82be8-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "interviewai-82be8",
+    storageBucket: "interviewai-82be8.firebasestorage.app",
+    messagingSenderId: "1037102407872",
+    appId: "1:1037102407872:web:5e81fd954f6fc094824d25"
+  };
 
-import {
-  getAuth
-} from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+  window.firebaseAuth = auth;
+  window.firebaseDB = db;
+  window.firebaseFunctions = { signOut, ref, get };
 
-import {
-  getDatabase,
-  ref,
-  get,
-  query,
-  orderByChild,
-  limitToLast,
-  onValue
-} from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
-
-
-const firebaseConfig = {
-
-  apiKey: "AIzaSyAmE3LJp-zxkcWwXCB1mwAjmU24KfUHwRI",
-  authDomain: "interviewai-82be8.firebaseapp.com",
-  projectId: "interviewai-82be8",
-  databaseURL:"https://interviewai-82be8-default-rtdb.asia-southeast1.firebasedatabase.app",
-  storageBucket: "interviewai-82be8.firebasestorage.app",
-  messagingSenderId: "1037102407872",
-  appId: "1:1037102407872:web:5e81fd954f6fc094824d25"
-
-};
-
-
-const app = initializeApp(firebaseConfig);
-
-const auth = getAuth(app);
-const db = getDatabase(app);
-
-
-window.firebaseAuth = auth;
-window.firebaseDB = db;
-
-window.firebaseFunctions = {
-
-  ref,
-  get,
-  query,
-  orderByChild,
-  limitToLast,
-  onValue
-
-};
-
-
-auth.onAuthStateChanged(user => {
-
-  window.currentUser = user;
-
-  window.dispatchEvent(
-    new CustomEvent('userReady', { detail: user })
-  );
-
-});
-
+  auth.onAuthStateChanged(user => {
+    window.currentUser = user;
+    window.dispatchEvent(new CustomEvent('userReady', { detail: user }));
+  });
 </script>
-
-
 <script src="js/main.js"></script>
 <script src="js/leaderboard.js"></script>
-
 </body>
 </html>
