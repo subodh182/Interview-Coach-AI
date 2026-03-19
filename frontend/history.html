@@ -4,97 +4,247 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>InterviewAI – History</title>
+  <!-- Anti-blink: apply theme before render -->
+  <script>
+    (function(){
+      var t = localStorage.getItem('theme') || 'dark';
+      document.documentElement.classList.add(t + '-mode');
+      document.addEventListener('DOMContentLoaded', function(){
+        document.body.classList.add(t + '-mode');
+      });
+    })();
+  </script>
   <link rel="stylesheet" href="css/main.css"/>
   <link rel="stylesheet" href="css/dashboard.css"/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 </head>
 <body class="dark-mode">
-  <div class="noise-overlay"></div>
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand"><span class="brand-icon">⬡</span><span>Interview<span class="accent">AI</span></span></div>
-    <nav class="sidebar-nav">
-      <a href="dashboard.html" class="nav-item"><span class="nav-icon">📊</span><span>Dashboard</span></a>
-      <a href="setup.html" class="nav-item"><span class="nav-icon">🎯</span><span>Start Interview</span></a>
-      <a href="history.html" class="nav-item active"><span class="nav-icon">📋</span><span>History</span></a>
-      <a href="leaderboard.html" class="nav-item"><span class="nav-icon">🏆</span><span>Leaderboard</span></a>
-      <a href="profile.html" class="nav-item"><span class="nav-icon">👤</span><span>Profile</span></a>
-    </nav>
-    <div class="sidebar-footer">
-      <button class="sidebar-theme" id="sidebarThemeToggle"><span class="theme-icon">☽</span><span>Toggle Theme</span></button>
-      <button class="logout-btn" id="logoutBtn"><span>🚪</span><span>Logout</span></button>
-    </div>
-  </aside>
-  <div class="sidebar-overlay" id="sidebarOverlay"></div>
-  <div class="main-layout">
-    <header class="topbar">
-      <div class="topbar-left">
-        <button class="hamburger-sidebar" id="sidebarToggle"><span></span><span></span><span></span></button>
-        <div class="topbar-greeting">Interview <span class="accent">History</span></div>
-      </div>
-      <div class="topbar-right">
-        <button class="theme-toggle" id="topThemeToggle"><span class="theme-icon">☽</span></button>
-        <a href="setup.html" class="btn-primary"><span>+</span> New Interview</a>
-      </div>
-    </header>
-    <main class="main-content">
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
-        <select id="roleFilter" class="input-group select" style="max-width:200px;padding:9px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-family:var(--font-body)">
-          <option value="">All Roles</option>
-          <option value="frontend">Frontend</option>
-          <option value="backend">Backend</option>
-          <option value="java">Java</option>
-          <option value="python">Python</option>
-          <option value="hr">HR</option>
-        </select>
-      </div>
-      <div id="historyList" class="recent-list">
-        <div style="text-align:center;padding:40px"><div class="spinner" style="margin:0 auto 16px"></div><p style="color:var(--text-muted)">Loading history...</p></div>
-      </div>
-    </main>
-  </div>
-  <div class="toast-container" id="toastContainer"></div>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
-    const firebaseConfig = { apiKey:"AIzaSyAmE3LJp-zxkcWwXCB1mwAjmU24KfUHwRI",authDomain:"interviewai-82be8.firebaseapp.com",projectId:"interviewai-82be8",storageBucket:"interviewai-82be8.firebasestorage.app",messagingSenderId:"1037102407872",appId:"1:1037102407872:web:5e81fd954f6fc094824d25" };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app); const db = getDatabase(app);
-    window.firebaseAuth = auth; window.firebaseDB = db;
-    window.firebaseFunctions = { signOut, ref, get };
-    auth.onAuthStateChanged(user => { if (!user) location.href='auth.html'; else { window.currentUser = user; window.dispatchEvent(new CustomEvent('userReady',{detail:user})); } });
-  </script>
-  <script src="js/main.js"></script>
-  <script>
-  window.addEventListener('userReady', async (e) => {
-    const { signOut, ref, get } = window.firebaseFunctions;
-    document.getElementById('logoutBtn')?.addEventListener('click', async () => { await signOut(window.firebaseAuth); location.href='auth.html'; });
-    const toggle = document.getElementById('sidebarToggle'); const sidebar = document.getElementById('sidebar'); const overlay = document.getElementById('sidebarOverlay');
-    toggle?.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('show'); });
-    overlay?.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('show'); });
+<div class="noise-overlay"></div>
 
-    try {
-      const snap = await get(ref(window.firebaseDB, `userInterviews/${e.detail.uid}`));
-      const interviews = [];
-      if (snap.exists()) { snap.forEach(child => interviews.push({id:child.key,...child.val()})); }
-      interviews.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-      const roleIcons = {frontend:'🌐',backend:'⚙️',fullstack:'💻',java:'☕',python:'🐍',devops:'🔧',datascience:'📊',android:'📱',hr:'💼',general:'🎯'};
-      const roleNames = {frontend:'Frontend Developer',backend:'Backend Developer',fullstack:'Full Stack',java:'Java Developer',python:'Python Developer',devops:'DevOps',datascience:'Data Science',android:'Android Dev',hr:'HR Interview'};
-      const list = document.getElementById('historyList');
-      if (!interviews.length) { list.innerHTML = '<div class="empty-state"><span>📋</span><p>No interviews yet. <a href="setup.html">Start one!</a></p></div>'; return; }
-      list.innerHTML = interviews.map(iv => {
-        const score = iv.score || 0;
-        const sc = score>=75?'high':score>=50?'mid':'low';
-        return `<a href="report.html?id=${iv.id}" class="recent-item">
-          <span class="recent-role-icon">${roleIcons[iv.role]||'🎯'}</span>
-          <div class="recent-info"><span class="recent-role">${roleNames[iv.role]||'Interview'}</span>
-          <span class="recent-meta">${iv.mode||'Technical'} · ${iv.difficulty||'Medium'} · ${iv.createdAt?.toDate?iv.createdAt.toDate().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):new Date(iv.createdAt).toLocaleDateString()}</span></div>
-          <span class="recent-score ${sc}">${score}%</span>
-          <span class="badge badge-${sc==='high'?'green':sc==='mid'?'yellow':'red'}">${sc==='high'?'Excellent':sc==='mid'?'Good':'Needs Work'}</span>
-        </a>`;
-      }).join('');
-    } catch(err) { document.getElementById('historyList').innerHTML = '<div class="empty-state"><span>⚠️</span><p>Could not load history. Check Firestore indexes.</p></div>'; }
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand"><span class="brand-icon">⬡</span><span>Interview<span class="accent">AI</span></span></div>
+  <nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-item"><span class="nav-icon">📊</span><span>Dashboard</span></a>
+    <a href="setup.html" class="nav-item"><span class="nav-icon">🎯</span><span>Start Interview</span></a>
+    <a href="history.html" class="nav-item active"><span class="nav-icon">📋</span><span>History</span></a>
+    <a href="leaderboard.html" class="nav-item"><span class="nav-icon">🏆</span><span>Leaderboard</span></a>
+    <a href="profile.html" class="nav-item"><span class="nav-icon">👤</span><span>Profile</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="sidebar-theme" id="sidebarThemeToggle"><span class="theme-icon">☽</span><span>Toggle Theme</span></button>
+    <button class="logout-btn" id="logoutBtn"><span>🚪</span><span>Logout</span></button>
+  </div>
+</aside>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="main-layout">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger-sidebar" id="sidebarToggle"><span></span><span></span><span></span></button>
+      <div class="topbar-greeting">Interview <span class="accent">History</span></div>
+    </div>
+    <div class="topbar-right">
+      <button class="theme-toggle" id="topThemeToggle"><span class="theme-icon">☽</span></button>
+      <a href="setup.html" class="btn-primary">+ New Interview</a>
+      <div class="user-avatar" id="userAvatar" onclick="window.location.href='profile.html'" style="cursor:pointer">U</div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Filters -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center">
+      <select id="roleFilter" style="padding:9px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-family:var(--font-body);font-size:.85rem;outline:none;cursor:pointer">
+        <option value="">All Roles</option>
+        <option value="frontend">Frontend Developer</option>
+        <option value="backend">Backend Developer</option>
+        <option value="fullstack">Full Stack</option>
+        <option value="java">Java Developer</option>
+        <option value="python">Python Developer</option>
+        <option value="devops">DevOps</option>
+        <option value="datascience">Data Science</option>
+        <option value="android">Android Developer</option>
+        <option value="hr">HR Interview</option>
+      </select>
+      <select id="scoreFilter" style="padding:9px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-family:var(--font-body);font-size:.85rem;outline:none;cursor:pointer">
+        <option value="">All Scores</option>
+        <option value="excellent">Excellent (75%+)</option>
+        <option value="good">Good (50-75%)</option>
+        <option value="needs-work">Needs Work (&lt;50%)</option>
+      </select>
+      <span id="historyCount" style="font-size:.82rem;color:var(--text-muted);margin-left:4px"></span>
+    </div>
+
+    <!-- History List -->
+    <div id="historyList" class="recent-list">
+      <div style="text-align:center;padding:60px 20px">
+        <div class="spinner" style="margin:0 auto 16px"></div>
+        <p style="color:var(--text-muted)">Loading your interviews...</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+  import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAmE3LJp-zxkcWwXCB1mwAjmU24KfUHwRI",
+    authDomain: "interviewai-82be8.firebaseapp.com",
+    databaseURL: "YOUR_DATABASE_URL",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+  window.firebaseAuth = auth;
+  window.firebaseDB = db;
+  window.firebaseFunctions = { signOut, ref, get };
+
+  auth.onAuthStateChanged(user => {
+    if (!user) { window.location.href = 'auth.html'; return; }
+    window.currentUser = user;
+    window.dispatchEvent(new CustomEvent('userReady', { detail: user }));
   });
-  </script>
+</script>
+<script src="js/main.js"></script>
+<script>
+let allInterviews = [];
+
+window.addEventListener('userReady', async (e) => {
+  const user = e.detail;
+
+  // Avatar
+  const ava = document.getElementById('userAvatar');
+  if (ava) ava.textContent = (user.displayName || 'U')[0].toUpperCase();
+
+  // Sidebar
+  const toggle = document.getElementById('sidebarToggle');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  toggle?.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay?.classList.toggle('show'); });
+  overlay?.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('show'); });
+
+  // Logout
+  document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+    await window.firebaseFunctions.signOut(window.firebaseAuth);
+    window.location.href = 'auth.html';
+  });
+
+  // Load interviews
+  await loadHistory(user);
+
+  // Filters
+  document.getElementById('roleFilter')?.addEventListener('change', applyFilters);
+  document.getElementById('scoreFilter')?.addEventListener('change', applyFilters);
+});
+
+async function loadHistory(user) {
+  const list = document.getElementById('historyList');
+  try {
+    const { ref, get } = window.firebaseFunctions;
+    const snap = await get(ref(window.firebaseDB, `userInterviews/${user.uid}`));
+
+    if (!snap.exists()) {
+      showEmpty(list);
+      return;
+    }
+
+    allInterviews = [];
+    snap.forEach(child => {
+      const d = child.val();
+      if (d) allInterviews.push({ id: child.key, ...d });
+    });
+
+    // Sort newest first
+    allInterviews.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+    if (!allInterviews.length) { showEmpty(list); return; }
+
+    renderHistory(allInterviews);
+
+  } catch (err) {
+    console.error('History load error:', err);
+    list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted)">
+      <p style="font-size:1.5rem;margin-bottom:8px">⚠️</p>
+      <p>Could not load history.</p>
+      <p style="font-size:.8rem;margin-top:8px;color:var(--text-muted)">${err.message}</p>
+    </div>`;
+  }
+}
+
+function applyFilters() {
+  const role = document.getElementById('roleFilter').value;
+  const score = document.getElementById('scoreFilter').value;
+
+  let filtered = [...allInterviews];
+
+  if (role) filtered = filtered.filter(iv => iv.role === role);
+  if (score === 'excellent') filtered = filtered.filter(iv => (iv.score||0) >= 75);
+  else if (score === 'good') filtered = filtered.filter(iv => (iv.score||0) >= 50 && (iv.score||0) < 75);
+  else if (score === 'needs-work') filtered = filtered.filter(iv => (iv.score||0) < 50);
+
+  renderHistory(filtered);
+}
+
+function renderHistory(interviews) {
+  const list = document.getElementById('historyList');
+  const countEl = document.getElementById('historyCount');
+  if (countEl) countEl.textContent = `${interviews.length} interview${interviews.length !== 1 ? 's' : ''} found`;
+
+  if (!interviews.length) {
+    list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted)">
+      <p style="font-size:1.5rem;margin-bottom:8px">🔍</p>
+      <p>No interviews match this filter.</p>
+    </div>`;
+    return;
+  }
+
+  const ri = {frontend:'🌐',backend:'⚙️',fullstack:'💻',java:'☕',python:'🐍',devops:'🔧',datascience:'📊',android:'📱',hr:'💼',general:'🎯'};
+  const rn = {frontend:'Frontend Developer',backend:'Backend Developer',fullstack:'Full Stack Developer',java:'Java Developer',python:'Python Developer',devops:'DevOps Engineer',datascience:'Data Science',android:'Android Developer',hr:'HR Interview',general:'General Interview'};
+
+  list.innerHTML = interviews.map(iv => {
+    const s = iv.score || 0;
+    const sc = s >= 75 ? 'high' : s >= 50 ? 'mid' : 'low';
+    const bc = s >= 75 ? 'badge-green' : s >= 50 ? 'badge-yellow' : 'badge-red';
+    const bl = s >= 75 ? 'Excellent' : s >= 50 ? 'Good' : 'Needs Work';
+    const dt = iv.createdAt
+      ? new Date(iv.createdAt).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })
+      : 'Recently';
+    const answered = (iv.answers || []).filter(a => a.answer !== '[Skipped]').length;
+    const total = (iv.answers || []).length;
+
+    return `<a href="report.html?id=${iv.id}" class="recent-item" style="display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:14px;padding:14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);text-decoration:none;color:var(--text-primary);transition:all .2s;margin-bottom:8px">
+      <span style="font-size:1.4rem">${ri[iv.role] || '🎯'}</span>
+      <div>
+        <span style="display:block;font-size:.9rem;font-weight:500">${rn[iv.role] || 'Interview'}</span>
+        <span style="display:block;font-size:.75rem;color:var(--text-muted);margin-top:3px">${iv.mode||'Technical'} · ${iv.difficulty||'Medium'} · ${dt}</span>
+        <span style="display:block;font-size:.72rem;color:var(--text-muted);margin-top:2px">${answered}/${total} answered</span>
+      </div>
+      <span style="font-family:var(--font-display);font-size:1.1rem;font-weight:800;color:${s>=75?'var(--accent-3)':s>=50?'var(--accent-4)':'var(--accent-danger)'}">${s}%</span>
+      <span class="badge ${bc}">${bl}</span>
+    </a>`;
+  }).join('');
+}
+
+function showEmpty(list) {
+  document.getElementById('historyCount').textContent = '0 interviews found';
+  list.innerHTML = `<div style="text-align:center;padding:60px 20px">
+    <p style="font-size:2.5rem;margin-bottom:12px">🎤</p>
+    <p style="font-size:1rem;font-weight:600;margin-bottom:8px">No interviews yet!</p>
+    <p style="color:var(--text-muted);margin-bottom:20px">Complete your first interview to see it here.</p>
+    <a href="setup.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--gradient-main);color:#fff;border-radius:var(--radius-md);text-decoration:none;font-weight:600;font-family:var(--font-display)">
+      🎯 Start First Interview
+    </a>
+  </div>`;
+}
+</script>
 </body>
 </html>
