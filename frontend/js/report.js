@@ -7,20 +7,40 @@ window.addEventListener('userReady', async (e) => {
 });
 
 async function loadReport(id, user) {
+  const cached = JSON.parse(
+    sessionStorage.getItem('lastInterviewResults') || 'null'
+  );
+
+  if (cached && (cached.id === id || !id || id === 'undefined')) {
+    renderReport(cached);
+    return;
+  }
+
   try {
-    // Try Realtime DB first
     if (window.firebaseDB && user && id && !id.startsWith('local_')) {
       const { ref, get } = window.firebaseFunctions;
-      const snap = await get(ref(window.firebaseDB, `userInterviews/${user.uid}/${id}`));
-      if (snap.exists()) { renderReport({ id, ...snap.val() }); return; }
+      const snap = await get(
+        ref(window.firebaseDB, `userInterviews/${user.uid}/${id}`)
+      );
+      if (snap.exists()) {
+        renderReport({ id, ...snap.val() });
+        return;
+      }
     }
-  } catch (err) { console.warn('DB load error:', err); }
+  } catch (err) {
+    console.warn('DB load failed:', err);
+  }
 
-  // Fallback to sessionStorage
-  const cached = JSON.parse(sessionStorage.getItem('lastInterviewResults') || 'null');
-  if (cached) { renderReport({ ...cached, id }); return; }
+  if (cached) {
+    renderReport(cached);
+    return;
+  }
 
-  document.getElementById('reportLoading').innerHTML = `<p style="color:var(--accent-danger)">Report not found. <a href="dashboard.html">Go to Dashboard</a></p>`;
+  document.getElementById('reportLoading').innerHTML = `
+    <p style="color:var(--accent-danger);text-align:center">
+      Report not found. 
+      <a href="dashboard.html" style="color:var(--accent)">Go to Dashboard</a>
+    </p>`;
 }
 
 function renderReport(data) {

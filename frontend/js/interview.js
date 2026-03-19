@@ -307,21 +307,61 @@ async function endInterview() {
   stopRecording();
   Toast.info('Saving your results...');
 
-  const validScores = interviewState.scores.filter(s=>!s.skipped&&s.score>0);
-  const avgScore = validScores.length?Math.round(validScores.reduce((s,e)=>s+e.score,0)/validScores.length):0;
+  const validScores = interviewState.scores.filter(s => !s.skipped && s.score > 0);
+  const avgScore = validScores.length
+    ? Math.round(validScores.reduce((s, e) => s + e.score, 0) / validScores.length)
+    : 0;
+
+  const interviewId = interviewState.interviewId || ('local_' + Date.now());
 
   const resultData = {
-    id: interviewState.interviewId,
-    role: interviewState.config.role,
-    mode: interviewState.config.mode,
-    difficulty: interviewState.config.difficulty,
+    id: interviewId,
+    role: interviewState.config?.role || 'general',
+    mode: interviewState.config?.mode || 'technical',
+    difficulty: interviewState.config?.difficulty || 'medium',
     score: avgScore,
-    answers: interviewState.answers,
-    scores: interviewState.scores,
-    config: interviewState.config,
+    answers: interviewState.answers || [],
+    scores: interviewState.scores || [],
+    config: interviewState.config || {},
     status: 'completed',
     createdAt: Date.now(),
   };
+
+  // PEHLE sessionStorage mein save karo
+  sessionStorage.setItem('lastInterviewResults', JSON.stringify(resultData));
+  sessionStorage.setItem('lastInterviewId', interviewId);
+
+  // Phir Firebase mein save karo
+  try {
+    const user = window.firebaseAuth?.currentUser;
+    if (user) {
+      const { getDatabase, ref, set, get, update } = await import(
+        "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"
+      );
+      const db = getDatabase();
+      await set(ref(db, `userInterviews/${user.uid}/${interviewId}`), resultData);
+      const snap = await get(ref(db, `users/${user.uid}`));
+      if (snap.exists()) {
+        const ud = snap.val();
+        const prev = ud.totalInterviews || 0;
+        const prevAvg = ud.avgScore || 0;
+        const newAvg = Math.round((prevAvg * prev + avgScore) / (prev + 1));
+        await update(ref(db, `users/${user.uid}`), {
+          totalInterviews: prev + 1,
+          avgScore: newAvg,
+          lastInterviewAt: Date.now(),
+        });
+      }
+      Toast.success('Interview saved! ✅');
+    }
+  } catch (err) {
+    console.warn('Firebase save failed:', err);
+  }
+
+  setTimeout(() => {
+    window.location.href = `report.html?id=${interviewId}`;
+  }, 800);
+}
 
   // Save to Firebase Realtime DB
   try {
@@ -354,7 +394,7 @@ async function endInterview() {
   }
 
   setTimeout(()=>window.location.href=`report.html?id=${interviewState.interviewId}`,800);
-}
+
 
 // ─── Reset UI ────────────────────────────────────
 function resetAnswerUI() {
