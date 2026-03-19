@@ -1,17 +1,21 @@
 /* ================================================
    main.js – Global Utilities
+   ANTI-BLINK: Theme applied immediately via inline script
 ================================================ */
 
-// Theme Management
+// ── Theme Manager ─────────────────────────────────
 const ThemeManager = {
   init() {
+    // Apply saved theme immediately (no flash)
     const saved = localStorage.getItem('theme') || 'dark';
-    this.apply(saved);
-    document.querySelectorAll('.theme-toggle, .sidebar-theme').forEach(btn => {
+    this.apply(saved, false);
+
+    // Bind all toggle buttons
+    document.querySelectorAll('.theme-toggle, .sidebar-theme, #themeToggle, #topThemeToggle, #sidebarThemeToggle').forEach(btn => {
       btn.addEventListener('click', () => this.toggle());
     });
   },
-  apply(theme) {
+  apply(theme, animate = true) {
     document.body.classList.remove('dark-mode', 'light-mode');
     document.body.classList.add(theme + '-mode');
     localStorage.setItem('theme', theme);
@@ -25,12 +29,10 @@ const ThemeManager = {
   }
 };
 
-// Toast System
+// ── Toast System ──────────────────────────────────
 const Toast = {
   container: null,
-  init() {
-    this.container = document.getElementById('toastContainer');
-  },
+  init() { this.container = document.getElementById('toastContainer'); },
   show(message, type = 'info', duration = 3500) {
     if (!this.container) return;
     const icons = { success: '✓', error: '✕', info: 'ℹ', warning: '⚠' };
@@ -49,7 +51,7 @@ const Toast = {
   warning: (msg, dur) => Toast.show(msg, 'warning', dur),
 };
 
-// Navbar scroll effect
+// ── Navbar Scroll ─────────────────────────────────
 const NavbarScroll = {
   init() {
     const navbar = document.getElementById('navbar');
@@ -60,26 +62,22 @@ const NavbarScroll = {
   }
 };
 
-// Hamburger Menu
+// ── Hamburger Menu ────────────────────────────────
 const HamburgerMenu = {
   init() {
     const btn = document.getElementById('hamburger');
     const menu = document.getElementById('mobileMenu');
     if (!btn || !menu) return;
-    btn.addEventListener('click', () => {
-      menu.classList.toggle('open');
-    });
+    btn.addEventListener('click', () => menu.classList.toggle('open'));
     document.addEventListener('click', (e) => {
-      if (!btn.contains(e.target) && !menu.contains(e.target)) {
-        menu.classList.remove('open');
-      }
+      if (!btn.contains(e.target) && !menu.contains(e.target)) menu.classList.remove('open');
     });
   }
 };
 
-// API Helper
+// ── API Helper ────────────────────────────────────
 const API = {
-  BASE: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  BASE: (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:3000/api'
     : '/api',
 
@@ -95,65 +93,37 @@ const API = {
     }
     return res.json();
   },
-
   get: (path, token) => API.request('GET', path, null, token),
   post: (path, data, token) => API.request('POST', path, data, token),
-  put: (path, data, token) => API.request('PUT', path, data, token),
-
   async getToken() {
-    if (window.firebaseAuth?.currentUser) {
-      return window.firebaseAuth.currentUser.getIdToken();
-    }
+    if (window.firebaseAuth?.currentUser) return window.firebaseAuth.currentUser.getIdToken();
     return null;
   }
 };
 
-// Session Storage for interview config
+// ── Session Storage ───────────────────────────────
 const Session = {
-  setInterviewConfig(config) {
-    sessionStorage.setItem('interviewConfig', JSON.stringify(config));
-  },
-  getInterviewConfig() {
-    try {
-      return JSON.parse(sessionStorage.getItem('interviewConfig') || 'null');
-    } catch { return null; }
-  },
-  setCurrentInterview(data) {
-    sessionStorage.setItem('currentInterview', JSON.stringify(data));
-  },
-  getCurrentInterview() {
-    try {
-      return JSON.parse(sessionStorage.getItem('currentInterview') || 'null');
-    } catch { return null; }
-  },
-  clear() {
-    sessionStorage.removeItem('interviewConfig');
-    sessionStorage.removeItem('currentInterview');
-  }
+  setInterviewConfig(config) { sessionStorage.setItem('interviewConfig', JSON.stringify(config)); },
+  getInterviewConfig() { try { return JSON.parse(sessionStorage.getItem('interviewConfig') || 'null'); } catch { return null; } },
+  setCurrentInterview(data) { sessionStorage.setItem('currentInterview', JSON.stringify(data)); },
+  getCurrentInterview() { try { return JSON.parse(sessionStorage.getItem('currentInterview') || 'null'); } catch { return null; } },
+  clear() { sessionStorage.removeItem('interviewConfig'); sessionStorage.removeItem('currentInterview'); }
 };
 
-// Greeting helper
+// ── Helpers ───────────────────────────────────────
 function getGreeting() {
   const h = new Date().getHours();
   if (h < 12) return 'Good morning';
   if (h < 17) return 'Good afternoon';
   return 'Good evening';
 }
-
-// Format date
 function formatDate(ts) {
   const d = ts?.toDate ? ts.toDate() : new Date(ts);
   return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 }
+function scoreColor(s) { return s >= 75 ? 'high' : s >= 50 ? 'mid' : 'low'; }
 
-// Score color
-function scoreColor(s) {
-  if (s >= 75) return 'high';
-  if (s >= 50) return 'mid';
-  return 'low';
-}
-
-// Initialize globals
+// ── Init ──────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   ThemeManager.init();
   Toast.init();
