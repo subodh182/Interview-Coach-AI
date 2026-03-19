@@ -1,4 +1,4 @@
-/* leaderboard.js – Fixed with Realtime DB */
+/* leaderboard.js – Reads from userInterviews node + users node */
 
 let allUsers = [];
 let currentFilter = 'all';
@@ -7,7 +7,7 @@ let currentRole = '';
 window.addEventListener('userReady', async (e) => {
   const user = e.detail;
 
-  // Setup sidebar
+  // Sidebar
   const toggle = document.getElementById('sidebarToggle');
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('sidebarOverlay');
@@ -27,89 +27,126 @@ window.addEventListener('userReady', async (e) => {
   }
 
   setupFilters();
-  await loadLeaderboard(user);
+  await buildLeaderboard(user);
 });
 
-// ─── Load All Users from Realtime DB ──────────────
-async function loadLeaderboard(user) {
+// ── Build leaderboard from userInterviews node ────
+async function buildLeaderboard(currentUser) {
   try {
     const { ref, get } = window.firebaseFunctions;
-    const snap = await get(ref(window.firebaseDB, 'users'));
 
-    if (!snap.exists()) {
-      renderLeaderboard([], user);
-      return;
+    // Get all users basic info
+    const usersSnap = await get(ref(window.firebaseDB, 'users'));
+    const usersMap = {};
+    if (usersSnap.exists()) {
+      usersSnap.forEach(child => {
+        usersMap[child.key] = { id: child.key, ...child.val() };
+      });
     }
 
-    allUsers = [];
-    snap.forEach(child => {
-      const d = child.val();
-      // Only include users with at least 1 interview
-      if (d && (d.totalInterviews || 0) > 0) {
-        allUsers.push({ id: child.key, ...d });
-      }
-    });
+    // Get all userInterviews to compute real stats
+    const ivSnap = await get(ref(window.firebaseDB, 'userInterviews'));
 
-    // Sort by avgScore descending
+    if (ivSnap.exists()) {
+      ivSnap.forEach(userNode => {
+        const uid = userNode.key;
+        const interviews = [];
+        userNode.forEach(ivChild => {
+          if (ivChild.val()) interviews.push({ id: ivChild.key, ...ivChild.val() });
+        });
+
+        if (!interviews.length) return;
+
+        // Compute stats from actual interviews
+        const validScores = interviews.filter(iv => (iv.score || 0) > 0);
+        const avgScore = validScores.length
+          ? Math.round(validScores.reduce((s, iv) => s + (iv.score || 0), 0) / validScores.length)
+          : 0;
+        const lastIv = interviews.sort((a,b) => (b.createdAt||0) - (a.createdAt||0))[0];
+
+        // Merge with user profile info
+        const userInfo = usersMap[uid] || {};
+        allUsers.push({
+          id: uid,
+          displayName: userInfo.displayName || userInfo.firstName || 'Anonymous',
+          role: userInfo.role || lastIv.config?.role || lastIv.role || 'general',
+          totalInterviews: interviews.length,
+          avgScore,
+          lastInterviewAt: lastIv.createdAt || 0,
+        });
+      });
+    } else if (Object.keys(usersMap).length > 0) {
+      // Fallback: use users node data
+      Object.values(usersMap).forEach(u => {
+        if ((u.totalInterviews || 0) > 0) {
+          allUsers.push(u);
+        }
+      });
+    }
+
+    // Sort by avgScore desc
     allUsers.sort((a, b) => (b.avgScore || 0) - (a.avgScore || 0));
 
-    renderLeaderboard(allUsers, user);
-    if (user) loadYourRank(user, allUsers);
+    renderLeaderboard(currentUser);
+    loadYourRank(currentUser);
 
   } catch (err) {
-    console.warn('Leaderboard load error:', err);
-    renderLeaderboard([], user);
+    console.error('Leaderboard error:', err);
+    document.getElementById('lbList').innerHTML = `
+      <div style="text-align:center;padding:40px;color:var(--text-muted)">
+        <p style="font-size:1.5rem;margin-bottom:8px">📊</p>
+        <p>Complete interviews to appear on the leaderboard!</p>
+        <a href="setup.html" style="color:var(--accent);font-weight:600;margin-top:8px;display:inline-block">Start Interview →</a>
+      </div>`;
+    document.getElementById('podium').innerHTML = '';
   }
 }
 
-// ─── Filter & Render ──────────────────────────────
-function getFilteredUsers() {
+// ── Filter ────────────────────────────────────────
+function getFiltered() {
   let filtered = [...allUsers];
 
-  // Role filter
   if (currentRole) {
     filtered = filtered.filter(u => u.role === currentRole);
   }
 
-  // Time filter — based on lastInterviewAt
   if (currentFilter === 'week') {
-    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const weekAgo = Date.now() - 7 * 86400000;
     filtered = filtered.filter(u => (u.lastInterviewAt || 0) >= weekAgo);
   } else if (currentFilter === 'month') {
-    const monthAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    const monthAgo = Date.now() - 30 * 86400000;
     filtered = filtered.filter(u => (u.lastInterviewAt || 0) >= monthAgo);
   }
 
   return filtered;
 }
 
-function renderLeaderboard(users, currentUser) {
-  const filtered = users.length ? getFilteredUsers() : [];
+// ── Render List ───────────────────────────────────
+function renderLeaderboard(currentUser) {
+  const filtered = getFiltered();
   const list = document.getElementById('lbList');
 
-  // Podium top 3
   renderPodium(filtered.slice(0, 3));
 
   if (!filtered.length) {
     list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted)">
       <p style="font-size:1.5rem;margin-bottom:8px">🎯</p>
-      <p>No rankings yet. Complete interviews to appear here!</p>
+      <p>No rankings yet for this filter.</p>
       <a href="setup.html" style="color:var(--accent);font-weight:600;margin-top:8px;display:inline-block">Start an Interview →</a>
     </div>`;
-    document.getElementById('podium').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted)">No data yet</div>';
     return;
   }
 
   list.innerHTML = filtered.map((u, i) => {
     const isYou = currentUser && u.id === currentUser.uid;
     const score = u.avgScore || 0;
-    const rankIcon = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`;
+    const rankDisplay = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`;
     return `
-    <div class="lb-row ${isYou ? 'you' : ''}">
-      <div class="lb-rank ${i < 3 ? 'top3' : ''}">${rankIcon}</div>
-      <div class="lb-avatar">${(u.displayName || u.firstName || 'U')[0].toUpperCase()}</div>
+    <div class="lb-row${isYou ? ' you' : ''}">
+      <div class="lb-rank${i < 3 ? ' top3' : ''}">${rankDisplay}</div>
+      <div class="lb-avatar">${(u.displayName || 'U')[0].toUpperCase()}</div>
       <div class="lb-info">
-        <span class="lb-name">${u.displayName || u.firstName || 'Anonymous'}${isYou ? ' (You)' : ''}</span>
+        <span class="lb-name">${u.displayName || 'Anonymous'}${isYou ? ' <span style="color:var(--accent);font-size:.7rem">(You)</span>' : ''}</span>
         <span class="lb-role">${getRoleLabel(u.role)}</span>
       </div>
       <div class="lb-interviews">
@@ -121,85 +158,71 @@ function renderLeaderboard(users, currentUser) {
   }).join('');
 }
 
+// ── Podium ────────────────────────────────────────
 function renderPodium(top3) {
   const podium = document.getElementById('podium');
   if (!top3.length) { podium.innerHTML = ''; return; }
 
-  // Visual order: 2nd, 1st, 3rd
-  const visualOrder = [
-    { data: top3[1], rank: 2, height: '75px', medal: '🥈' },
-    { data: top3[0], rank: 1, height: '100px', medal: '🥇' },
-    { data: top3[2], rank: 3, height: '55px', medal: '🥉' },
+  // Order: 2nd | 1st | 3rd
+  const slots = [
+    { u: top3[1], rank: 2, height: '75px', medal: '🥈' },
+    { u: top3[0], rank: 1, height: '100px', medal: '🥇' },
+    { u: top3[2], rank: 3, height: '55px', medal: '🥉' },
   ];
 
-  podium.innerHTML = visualOrder.map(({ data, rank, height, medal }) => {
-    if (!data) return `<div class="podium-item pod-${rank}"><div class="pod-platform" style="height:${height}">${rank}</div></div>`;
+  podium.innerHTML = slots.map(({ u, rank, height, medal }) => {
+    if (!u) return `<div class="podium-item pod-${rank}"><div class="pod-platform" style="height:${height}">${rank}</div></div>`;
     return `
     <div class="podium-item pod-${rank}">
       <div class="pod-user">
-        <div class="pod-avatar">${(data.displayName || 'U')[0].toUpperCase()}<span class="pod-medal">${medal}</span></div>
-        <span class="pod-name">${(data.displayName || 'User').split(' ')[0]}</span>
-        <span class="pod-score">${data.avgScore || 0}%</span>
+        <div class="pod-avatar">${(u.displayName||'U')[0].toUpperCase()}<span class="pod-medal">${medal}</span></div>
+        <span class="pod-name">${(u.displayName||'User').split(' ')[0]}</span>
+        <span class="pod-score">${u.avgScore||0}%</span>
       </div>
       <div class="pod-platform" style="height:${height}">${rank}</div>
     </div>`;
   }).join('');
 }
 
-// ─── Your Rank Card ───────────────────────────────
-async function loadYourRank(user, allUsersList) {
+// ── Your Rank Card ────────────────────────────────
+function loadYourRank(user) {
+  if (!user) return;
   const card = document.getElementById('yourRankCard');
   card.classList.remove('hidden');
 
-  const yrAvatar = document.getElementById('yrAvatar');
-  const yrName = document.getElementById('yrName');
-  const yrStats = document.getElementById('yrStats');
-  const yrRank = document.getElementById('yrRank');
-  const yrScore = document.getElementById('yrScore');
+  document.getElementById('yrAvatar').textContent = (user.displayName||'U')[0].toUpperCase();
+  document.getElementById('yrName').textContent = user.displayName || 'You';
 
-  yrAvatar.textContent = (user.displayName || 'U')[0].toUpperCase();
-  yrName.textContent = user.displayName || 'You';
-
-  // Find user in list
-  const myIndex = allUsersList.findIndex(u => u.id === user.uid);
+  const myIndex = allUsers.findIndex(u => u.id === user.uid);
   if (myIndex !== -1) {
-    const myData = allUsersList[myIndex];
-    yrStats.textContent = `${myData.totalInterviews || 0} interviews · ${myData.avgScore || 0}% avg`;
-    yrRank.textContent = `#${myIndex + 1}`;
-    yrScore.textContent = `${myData.avgScore || 0}%`;
+    const myData = allUsers[myIndex];
+    document.getElementById('yrStats').textContent = `${myData.totalInterviews||0} interviews · ${myData.avgScore||0}% avg`;
+    document.getElementById('yrRank').textContent = `#${myIndex + 1}`;
+    document.getElementById('yrScore').textContent = `${myData.avgScore||0}%`;
   } else {
-    // User has no interviews yet — fetch from DB
-    try {
-      const { ref, get } = window.firebaseFunctions;
-      const snap = await get(ref(window.firebaseDB, `users/${user.uid}`));
-      if (snap.exists()) {
-        const d = snap.val();
-        yrStats.textContent = `${d.totalInterviews || 0} interviews · ${d.avgScore || 0}% avg`;
-        yrScore.textContent = `${d.avgScore || 0}%`;
-      }
-      yrRank.textContent = '#--';
-    } catch (e) { yrRank.textContent = '#--'; }
+    document.getElementById('yrStats').textContent = '0 interviews · complete one to rank!';
+    document.getElementById('yrRank').textContent = '#--';
+    document.getElementById('yrScore').textContent = '0%';
   }
 }
 
-// ─── Filters ──────────────────────────────────────
+// ── Filters ───────────────────────────────────────
 function setupFilters() {
   document.querySelectorAll('.lb-filter').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.lb-filter').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentFilter = btn.dataset.filter;
-      renderLeaderboard(allUsers, window.currentUser);
+      renderLeaderboard(window.currentUser);
     });
   });
-
-  document.getElementById('roleFilter')?.addEventListener('change', (e) => {
+  document.getElementById('roleFilter')?.addEventListener('change', e => {
     currentRole = e.target.value;
-    renderLeaderboard(allUsers, window.currentUser);
+    renderLeaderboard(window.currentUser);
   });
 }
 
 function getRoleLabel(role) {
-  const m = { frontend:'Frontend Dev', backend:'Backend Dev', fullstack:'Full Stack', java:'Java Dev', python:'Python Dev', devops:'DevOps', datascience:'Data Science', android:'Android Dev', hr:'HR' };
+  const m = {frontend:'Frontend Dev',backend:'Backend Dev',fullstack:'Full Stack',java:'Java Dev',python:'Python Dev',devops:'DevOps',datascience:'Data Science',android:'Android Dev',hr:'HR'};
   return m[role] || 'Developer';
 }
